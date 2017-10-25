@@ -198,18 +198,16 @@ int main() {
   }
 
   int lane = 1;
+
   double ref_vel = 0.0;
 
-  h.onMessage([&ref_vel,&map_waypoints_x,&map_waypoints_y,&map_waypoints_s,&map_waypoints_dx,&map_waypoints_dy,&lane](uWS::WebSocket<uWS::SERVER> ws, char *data, size_t length,
+  h.onMessage([&map_waypoints_x,&map_waypoints_y,&map_waypoints_s,&map_waypoints_dx,&map_waypoints_dy](uWS::WebSocket<uWS::SERVER> ws, char *data, size_t length,
                      uWS::OpCode opCode) {
     // "42" at the start of the message means there's a websocket message event.
     // The 4 signifies a websocket message
     // The 2 signifies a websocket event
     //auto sdata = string(data).substr(0, length);
     //cout << sdata << endl;
-
-
-
     if (length && length > 2 && data[0] == '4' && data[1] == '2') {
 
       auto s = hasData(data);
@@ -251,7 +249,7 @@ int main() {
             bool too_close = false;
 
             // find ref_v to use
-            for (unsigned int i = 0; i < sensor_fusion.size(); i++)
+            for (unsigned int i = 0; i < sensor_fusion_size(); i++)
             {
               // Car is in my lane
               float d = sensor_fusion[i][6];
@@ -270,10 +268,6 @@ int main() {
                   // also flag to try to change lanes.
                   //ref_vel = 29.5; //mph
                   too_close = true;
-                  if(lane > 0)
-                  {
-                    lane = 0;
-                  }
                 }
               }
             }
@@ -338,9 +332,9 @@ int main() {
             ptsx.push_back(next_wp1[0]);
             ptsx.push_back(next_wp2[0]);
 
-            ptsy.push_back(next_wp0[1]);
-            ptsy.push_back(next_wp1[1]);
-            ptsy.push_back(next_wp2[1]);
+            ptsy.push_back(next_wp0[0]);
+            ptsy.push_back(next_wp1[0]);
+            ptsy.push_back(next_wp2[0]);
 
             for(unsigned int i = 0; i < ptsx.size(); i++)
             {
@@ -377,7 +371,7 @@ int main() {
             // Fill out the rest of out path planner after filling it with previous points, here we will always output 50 points
             for( unsigned int i = 0; i <= 50 - previous_path_x.size(); i++)
             {
-              double N = (target_dist / (0.02 * ref_vel / 2.24));
+              double N = (target_dist / (.02 * ref_vel / 2.24));
               double x_point = x_add_on + (target_x) / N;
               double y_point = s(x_point);
 

@@ -849,4 +849,16 @@ Eigen-3.3/Eigen/QR
 /home/alejandro/Escritorio/Self-Driving-Cars/term3/path_planning/path-planning/src/Eigen-3.3/Eigen/QR
 json.hpp
 /home/alejandro/Escritorio/Self-Driving-Cars/term3/path_planning/path-planning/src/json.hpp
+spline.h
+/home/alejandro/Escritorio/Self-Driving-Cars/term3/path_planning/path-planning/src/spline.h
+
+/home/alejandro/Escritorio/Self-Driving-Cars/term3/path_planning/path-planning/src/spline.h
+cstdio
+-
+cassert
+-
+vector
+-
+algorithm
+-
 
