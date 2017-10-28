@@ -242,27 +242,30 @@ int main() {
 
             int prev_size = previous_path_x.size();
 
-            // Avoid collision with cars in front of us
             if(prev_size > 0)
             {
               car_s = end_path_s;
             }
 
             bool too_close = false;
+            bool car_left = false;
+            bool car_right = false;
 
             // find ref_v to use
             for (unsigned int i = 0; i < sensor_fusion.size(); i++)
             {
-              // Car is in my lane
+
               float d = sensor_fusion[i][6];
+              double vx = sensor_fusion[i][3];
+              double vy = sensor_fusion[i][4];
+              double check_speed = sqrt(vx*vx+vy*vy);
+              double check_car_s = sensor_fusion[i][5];
+
+              check_car_s += ((double)prev_size * .02 * check_speed);
+
+              // Car is in my lane
               if (d < (2 + 4 * lane + 2) && d > (2 + 4 * lane -2))
               {
-                double vx = sensor_fusion[i][3];
-                double vy = sensor_fusion[i][4];
-                double check_speed = sqrt(vx*vx+vy*vy);
-                double check_car_s = sensor_fusion[i][5];
-
-                check_car_s += ((double)prev_size * .02 * check_speed);
 
                 if ((check_car_s > car_s) && ((check_car_s - car_s) < 30))
                 {
@@ -270,11 +273,27 @@ int main() {
                   // also flag to try to change lanes.
                   //ref_vel = 29.5; //mph
                   too_close = true;
-                  if(lane > 0)
-                  {
-                    lane = 0;
-                  }
+                  if((lane == 2) && (!car_left)) lane = 1;
+                  else if((lane == 1) && (!car_right)) lane = 2;
+                  else if((lane == 1) && (!car_left)) lane = 0;
+                  else if((lane == 0) && (!car_right)) lane = 1;
+
                 }
+                else too_close = false;
+
+              }
+              if (d < (2 + 4 * lane + 6) && (d < (2 + 4 * lane + 2)))
+              {
+
+                if ((check_car_s > car_s) && ((check_car_s - car_s) < 30))
+                  car_left = true;
+                else car_left = false;
+              }
+              if(d > (2 + 4 * lane - 6) && (d > (2 + 4 * lane -2)))
+              {
+                if ((check_car_s > car_s) && ((check_car_s - car_s) < 30))
+                  car_right = true;
+                else car_right = false;
               }
             }
 
@@ -282,11 +301,10 @@ int main() {
             {
               ref_vel -= .224;
             }
-            else if(ref_vel < 49.5)
+            else if(ref_vel < 49.7)
             {
               ref_vel += .224;
             }
-
 
 
             //Create a list of widely spaced (x,y) waaypoints, evenly spaced at 30m
@@ -349,7 +367,7 @@ int main() {
               double shift_y = ptsy[i]-ref_y;
 
               ptsx[i] = (shift_x * cos(0-ref_yaw) - shift_y * sin(0 - ref_yaw));
-              ptsy[i] = (shift_x * sin(0-ref_yaw) - shift_y * cos(0 - ref_yaw));
+              ptsy[i] = (shift_x * sin(0-ref_yaw) + shift_y * cos(0 - ref_yaw));
             }
 
             // Create a spline
@@ -368,14 +386,14 @@ int main() {
             }
 
             // Calculate how to break up spline points so that we travel at our desired reference velodity
-            double target_x = 30;
+            double target_x = 30.0;
             double target_y = s(target_x);
             double target_dist = sqrt((target_x)*(target_x)+(target_y)*(target_y));
 
             double x_add_on = 0;
 
             // Fill out the rest of out path planner after filling it with previous points, here we will always output 50 points
-            for( unsigned int i = 0; i <= 50 - previous_path_x.size(); i++)
+            for( unsigned int i = 1; i <= 50 - previous_path_x.size(); i++)
             {
               double N = (target_dist / (0.02 * ref_vel / 2.24));
               double x_point = x_add_on + (target_x) / N;
@@ -388,7 +406,7 @@ int main() {
 
               // rotate back to normal after rotating it earlier
               x_point = (x_ref * cos(ref_yaw) - y_ref * sin(ref_yaw));
-              y_point = (x_ref * sin(ref_yaw) - y_ref * cos(ref_yaw));
+              y_point = (x_ref * sin(ref_yaw) + y_ref * cos(ref_yaw));
 
               x_point += ref_x;
               y_point += ref_y;
