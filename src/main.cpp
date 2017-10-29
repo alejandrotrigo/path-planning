@@ -9,6 +9,7 @@
 #include "Eigen-3.3/Eigen/QR"
 #include "json.hpp"
 #include "spline.h"
+#include "fsm.cpp"
 
 using namespace std;
 
@@ -162,7 +163,7 @@ vector<double> getXY(double s, double d, const vector<double> &maps_s, const vec
 
 int main() {
   uWS::Hub h;
-
+  FSM fsm;
   // Load up map values for waypoint's x,y,s and d normalized normal vectors
   vector<double> map_waypoints_x;
   vector<double> map_waypoints_y;
@@ -200,7 +201,7 @@ int main() {
   int lane = 1;
   double ref_vel = 0.0;
 
-  h.onMessage([&ref_vel,&map_waypoints_x,&map_waypoints_y,&map_waypoints_s,&map_waypoints_dx,&map_waypoints_dy,&lane](uWS::WebSocket<uWS::SERVER> ws, char *data, size_t length,
+  h.onMessage([&fsm, &ref_vel,&map_waypoints_x,&map_waypoints_y,&map_waypoints_s,&map_waypoints_dx,&map_waypoints_dy,&lane](uWS::WebSocket<uWS::SERVER> ws, char *data, size_t length,
                      uWS::OpCode opCode) {
     // "42" at the start of the message means there's a websocket message event.
     // The 4 signifies a websocket message
@@ -252,6 +253,12 @@ int main() {
             bool car_right = false;
 
             // find ref_v to use
+
+            State next_state_p = fsm.transition_function(lane, car_s, car_speed, sensor_fusion);
+            std::cout << "PREDICTED: " << next_state_p << std::endl;
+            /*if ((fsm.curr_s == State::TR) && (lane < 2)) lane ++;
+            if ((fsm.curr_s == State::TL) && (lane > 0)) lane --;*/
+
             for (unsigned int i = 0; i < sensor_fusion.size(); i++)
             {
 
@@ -273,37 +280,20 @@ int main() {
                   // also flag to try to change lanes.
                   //ref_vel = 29.5; //mph
                   too_close = true;
-                  if((lane == 2) && (!car_left)) lane = 1;
-                  else if((lane == 1) && (!car_right)) lane = 2;
-                  else if((lane == 1) && (!car_left)) lane = 0;
-                  else if((lane == 0) && (!car_right)) lane = 1;
+
 
                 }
-                else too_close = false;
 
               }
-              if (d < (2 + 4 * lane + 6) && (d < (2 + 4 * lane + 2)))
-              {
 
-                if ((check_car_s > car_s) && ((check_car_s - car_s) < 30))
-                  car_left = true;
-                else car_left = false;
-              }
-              if(d > (2 + 4 * lane - 6) && (d > (2 + 4 * lane -2)))
-              {
-                if ((check_car_s > car_s) && ((check_car_s - car_s) < 30))
-                  car_right = true;
-                else car_right = false;
-              }
             }
-
             if (too_close)
             {
-              ref_vel -= .224;
+              ref_vel -= .190;
             }
             else if(ref_vel < 49.7)
             {
-              ref_vel += .224;
+              ref_vel += .220;
             }
 
 
