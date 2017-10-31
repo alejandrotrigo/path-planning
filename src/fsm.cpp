@@ -18,8 +18,8 @@ void delete_elem(std::vector<State> &v, State st)
 
 std::vector<State> FSM::successor_states(int curr_l)
 {
-  State s[] = {State::KL, State::PL, State::PR, State::TL, State::TR};
-  //State s[] = {State::KL, State::TL, State::TR};
+  //State s[] = {State::KL, State::PL, State::PR, State::TL, State::TR};
+  State s[] = {State::KL, State::TL, State::TR};
   std::vector<State> states (s, s + sizeof(s) / sizeof(State));
 
 
@@ -37,8 +37,8 @@ std::vector<State> FSM::successor_states(int curr_l)
 
   if (this->curr_s == State::KL)
   {
-    delete_elem(states, State::TL);
-    delete_elem(states, State::TR);
+    //delete_elem(states, State::TL);
+    //delete_elem(states, State::TR);
   }
 
   if (this->curr_s == State::TL)
@@ -55,7 +55,7 @@ std::vector<State> FSM::successor_states(int curr_l)
     delete_elem(states, State::TR);
   }
 
-  if (this->curr_s == State::PL)
+  /*if (this->curr_s == State::PL)
   {
     delete_elem(states, State::TR);
     delete_elem(states, State::PL);
@@ -64,7 +64,7 @@ std::vector<State> FSM::successor_states(int curr_l)
   {
     delete_elem(states, State::TL);
     delete_elem(states, State::PR);
-  }
+  }*/
 
   return states;
 }

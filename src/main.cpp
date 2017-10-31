@@ -256,8 +256,8 @@ int main() {
 
             State next_state_p = fsm.transition_function(lane, car_s, car_speed, sensor_fusion);
             std::cout << "PREDICTED: " << next_state_p << std::endl;
-            /*if ((fsm.curr_s == State::TR) && (lane < 2)) lane ++;
-            if ((fsm.curr_s == State::TL) && (lane > 0)) lane --;*/
+            if ((fsm.curr_s == State::TR) && (lane < 2)) lane ++;
+            if ((fsm.curr_s == State::TL) && (lane > 0)) lane --;
 
             for (unsigned int i = 0; i < sensor_fusion.size(); i++)
             {
