@@ -1,5 +1,48 @@
 #include "fsm.h"
 
+/* PRIVATE FUNCTIONS */
+
+double FSM::change_lane_cost(trajectory data)
+{
+  if (data.target_lane != data.current_lane)
+  {
+    if(data.target_lane == 1) return 0;
+    return EFFICIENCY;
+  }
+  return 0;
+}
+
+double FSM::inefficiency_cost(trajectory data)
+{
+  double speed = data.avg_speed;
+  double diff = MAX_SPEED - speed;
+  double pct = diff / MAX_SPEED;
+  return 8 * pow(pct,2) * EFFICIENCY; 
+}
+
+double FSM::collision_cost(trajectory data)
+{
+  return 0;
+}
+
+double FSM::free_line_cost(trajectory data)
+{
+  if (data.prop_closest_approach > SECURITY_DIST * 2)
+    return 10 * pow(((MAX_DIST - data.prop_closest_approach) / MAX_DIST), 2);
+  return 2 * pow(((DISTANCE - data.prop_closest_approach) / DISTANCE), 2) * COMFORT;
+}
+
+double FSM::buffer_cost(trajectory data)
+{
+  if(data.actual_closest_approach < MIN_DIST)
+    return 5 * DANGER;
+  if (data.actual_closest_approach > SECURITY_DIST)
+    return 0;
+  return 5 * (1 - (pow((data.actual_closest_approach / SECURITY_DIST), 2))) * DANGER;
+}  
+
+/* PUBLIC  FUNCTIONS */
+
 FSM::FSM()
 {
 
